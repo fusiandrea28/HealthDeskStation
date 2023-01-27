@@ -52,7 +52,7 @@ Google Script code is found in this repository.
 
 Google Spreadsheet template should be as below.
 
-<img src="https://github.com/fusiandrea28/HealthDesk/blob/main/GSheet_template.jpg" alt="GSheet page"/>
+<img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/GSheet_template.jpg" alt="GSheet page"/>
 --------
 
 MIT License
