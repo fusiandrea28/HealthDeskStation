@@ -5,31 +5,28 @@
 
 ## Revision History
 
+## Rev1.2 (TBD)
+- Add TVOC sensor (SEN55 from Sensirion)
+- Create an eco-friendly enclosure for the device
+
+## Rev1.1
+- Added support for TFT SPI display (rounded)
+- Replaced GSheet logging to ThingSpeak
+- General improvements
+
 ## Rev1.0
 - Temp, Humidity and CO2 from SCD41 sensor
 - Publishing to GSheet
 - GSheet pulls data from historical weather database
 - LED ring effects with NeoPixel library
 
-## Rev1.1 (TBD)
-- Add a HMI (e-paper or LCD display)
-- Add a way to let the user force the update (before the 30 mins timer)
-- Improve conditional formatting
-
-## Rev1.2 (TBD)
-- Add TVOC sensor (SEN55 from Sensirion)
-- Create an eco-friendly enclosure for the device
-
 ## Description
-An embedded system based on ESP32 and Google Sheet.
+An embedded system based on ESP32 device and ThingSpeak.
 
 Arduino IDE is used to flash the ESP32.
 
-Google Script code for additional functions on the Google Spreadsheet.
-
 The aim of this project is to get useful data about the environment.
 This device can be placed in an office to know when there's a need to ventilate (high CO2 values).
-It also helps having an idea of the climate change in Taipei by comparing the weather conditions of today, to those of the past.
 
 ## How does it work?
 
@@ -40,22 +37,31 @@ The ESP32 enters a WiFi setup mode by turning on an access point.
 A smartphone or PC can be used to connect to the ESP32 WiFi network. An intuitive webpage lets you pick an SSID and insert a password to connect to.
 The device restarts if the connection is successful.
 
-Once the device is connected to the internet, it gathers data every 30 minutes from a Sensirion SCD41 sensor connected via I2C interface.
-It then push the SSID name, current time and date, temperature, humidity and CO2 values to a Google Spreadsheet.
+Once the device is connected to the internet, it gathers data every 60 seconds from a Sensirion SCD41 sensor connected via I2C interface.
+Temperature, Humidity and CO2 are shown in sequence on the TFT round display.
 
-The GSheet runs a Google Script (doGet) to read incoming data from the ESP32.
-
-An additional function is used to gather historical weather data from a different tab in the same sheet (10, 20, 30 and 40 years ago temperature and humidity data).
-
+Every 10 minutes, it also push the temperature, humidity, CO2 and a Status to a ThingSpeak Channel.
 
 ## Setup
 
-See the instruction in main.ino for hardware setup.
-Google Script code is found in this repository.
+See the instruction in main.ino for hardware setup. Also pasted here below.
 
-Google Spreadsheet template should be as below.
-
-<img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/GSheet_template.jpg" alt="GSheet page"/>
+	1.
+	Install libraries as below:
+	- https://github.com/Sensirion/arduino-i2c-scd4x
+	- https://github.com/tzapu/WiFiManager
+	- https://github.com/Bodmer/TFT_eSPI
+	
+	2.
+	ThingSpeak setup
+	- Create a channel with 3 fields (temperature, humidity, co2)
+	- Copy channel ID and API key and paste in USER SETUP below
+	
+	3.
+	Change the LED, I2C and SPI pins
+	- In the code below, change the SDA and SCL pins in Wire.begin(SDA, SCL) function
+	- In the tftRoundSPI.ino follow the instruction at the top of the code
+  
 --------
 
 MIT License
