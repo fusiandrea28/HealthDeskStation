@@ -29,99 +29,340 @@
 
  **********************************************************************************/
 
-//---------------------------------------------------------------------
+//----------------------------------------------------------------------------
 //------------------ SPI Display Define Section-------------------------------
 #include <SPI.h>
 #include <TFT_eSPI.h>       // Hardware-specific library
-#include "qrCode.h"
-#include "TJpg_Decoder.h"
 TFT_eSPI tft = TFT_eSPI();  // Invoke custom library
-
-#define NEEDLE_LENGTH 35  // Visible length
-#define NEEDLE_WIDTH   5  // Width of needle - make it an odd number
-#define NEEDLE_RADIUS 90  // Radius at tip
-#define NEEDLE_COLOR1 TFT_MAROON  // Needle periphery colour
-#define NEEDLE_COLOR2 TFT_RED     // Needle centre colour
-#define DIAL_CENTRE_X 120
-#define DIAL_CENTRE_Y 120
 
 uint16_t* tft_buffer;
 bool      buffer_loaded = false;
 uint16_t  spr_width = 0;
 uint16_t  bg_color =0;
+uint16_t  fg_color =0;
 
-// =======================================================================================
-// This function will be called during decoding of the jpeg file
-// =======================================================================================
-bool tft_output(int16_t x, int16_t y, uint16_t w, uint16_t h, uint16_t* bitmap)
+int maxco2 = 1500; // define max value for CO2 gauge
+
+void displaySetup() 
 {
-  // Stop further decoding as image is running off bottom of screen
-  if ( y >= tft.height() ) return 0;
-
-  // This function will clip the image block rendering automatically at the TFT boundaries
-  tft.pushImage(x, y, w, h, bitmap);
-
-  // Return 1 to decode next block
-  return 1;
-}
-
-/***********************************************************************
- ********  Initialize SPI display and print QR image
- ***********************************************************************/
-void printQRcode()
-{
-  // The byte order can be swapped (set true for TFT_eSPI)
-	TJpgDec.setSwapBytes(true);
-	
-	// The jpeg decoder must be given the exact name of the rendering function above
-	TJpgDec.setCallback(tft_output);
-	
-	tft.begin();
-	tft.setRotation(0);
-	tft.fillScreen(TFT_BLACK);
-	
-	TJpgDec.drawJpg(0, 0, qrCodepic, sizeof(qrCodepic));
-	tft.drawCircle(DIAL_CENTRE_X, DIAL_CENTRE_Y, NEEDLE_RADIUS-NEEDLE_LENGTH, TFT_DARKGREY);
-}
-
-void randomSmoothCircles() {
-
 	tft.init();
-	tft.fillScreen(TFT_BLACK); // Background is black
-	tft.setCursor(0, 0);
-	
-	// Draw some random smooth rounded rectangles
-	for (int i = 0; i < 20; i++)
-	{
-	int radius = random(60);
-	int w = random(2 * radius, 160);
-	int h = random(2 * radius, 160);
-	int t = random(1, radius / 3);
-	int x = random(tft.width() - w);
-	int y = random(tft.height() - h);
-	
-	// Random colour is anti-aliased (blended) with background colour (black in this case)
-	tft.drawSmoothRoundRect(x, y, radius, radius - t, w, h, random(0x10000), TFT_BLACK);
-	}
-	tft.print("Variable thickness");
-	delay(2000);
-	
+    tft.setRotation(0);
+    tft.fillScreen(TFT_BLACK);
+}
+
+void displayCO2() 
+{
 	tft.fillScreen(TFT_BLACK);
-	tft.setCursor(0, 0);
 	
-	// Draw some random minimum thickness smooth rounded rectangles
-	for (int i = 0; i < 20; i++)
-	{
-	int radius = random(60);
-	int w = random(2 * radius, 160);
-	int h = random(2 * radius, 160);
-	int t = 0;
-	int x = random(tft.width() - w);
-	int y = random(tft.height() - h);
+	if (co2 >= 1200) {
+          tft.setTextColor(TFT_RED, TFT_BLACK);
+		  fg_color = TFT_RED;
+        }
+        else if (co2 >= 700){
+          tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+		  fg_color = TFT_ORANGE;
+        }
+		else {
+          tft.setTextColor(TFT_GREEN, TFT_BLACK);
+		  fg_color = TFT_GREEN;
+    }
 	
-	// Random colour is anti-aliased (blended) with background colour (black in this case)
-	tft.drawSmoothRoundRect(x, y, radius, radius - t, w, h, random(0x10000), TFT_BLACK);
-	}
-	tft.print("Minimum thickness");
-	delay(2000);
+	uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
+	
+	uint16_t x = 120;  // Position of centre of arc
+	uint16_t y = 120;
+	
+	uint8_t radius       = 120; // Outer arc radius
+	uint8_t thickness    = 20;     // Thickness
+	uint8_t inner_radius = radius - thickness;        // Calculate inner radius (can be 0 for circle segment)
+	
+	// 0 degrees is at 6 o'clock position
+	// Arcs are drawn clockwise from start_angle to end_angle
+	uint16_t start_angle = 0; // Start angle must be in range 0 to 360
+	uint16_t end_angle   = co2*360/maxco2; // End angle must be in range 0 to 360
+	
+	//bool arc_end = 2;   // true = round ends, false = square ends (arc_end parameter can be omitted, ends will then be square)
+	
+	tft.drawSmoothArc(x, y, radius, inner_radius, start_angle, end_angle, fg_color, bg_color);
+	
+//
+	
+	uint16_t xco2num = 120;  // Position of number
+	uint16_t yco2num = 140;
+
+	uint16_t xco2text = 120;  // Position of text
+	uint16_t yco2text = 60;	
+	
+	if (co2 >= 1000 && co2 <= 1999) {
+          xco2num = 110;
+    }
+	
+	// Set datum to Middle Right
+	tft.setTextDatum(TC_DATUM);
+		
+	// Set the padding to the maximum width that the digits could occupy in font 4
+	// This ensures small numbers obliterate large ones on the screen
+	//tft.setTextPadding( tft.textWidth("-88.88", 4) );
+	
+	tft.setTextSize(1);
+
+	// Draw a floating point number with 2 decimal places with right datum in font 4
+	tft.drawNumber(co2, xco2num, yco2num, 7);
+	
+	// Reset text padding to 0 otherwise all future rendered strings will use it!
+	tft.setTextPadding(0);
+	
+	tft.setTextSize(5);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("CO2", xco2text, yco2text);
+	
+	tft.drawLine(40, 120, 200, 120, TFT_WHITE);
+	
+}
+
+void displayTempHumid() 
+{
+	tft.fillScreen(TFT_BLACK);
+	
+	uint16_t xtempnum = 95;  // Position of temperature
+	uint16_t ytempnum = 55;
+	
+	uint16_t xhumidnum = 95;  // Position of humidity
+	uint16_t yhumidnum = 140;
+
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	
+	// Set datum to Middle Right
+	tft.setTextDatum(TC_DATUM);
+		
+	// Set the padding to the maximum width that the digits could occupy in font 4
+	// This ensures small numbers obliterate large ones on the screen
+	tft.setTextPadding( tft.textWidth("88.88", 7) );
+	
+	tft.setTextSize(1);
+
+	// Draw a floating point number with 1 decimal places with right datum in font 4
+	tft.drawNumber(temperature, xtempnum, ytempnum, 7);
+		
+	// Draw a floating point number with 1 decimal places with right datum in font 4
+	tft.drawNumber(humidity, xhumidnum, yhumidnum, 7);
+
+	// Reset text padding to 0 otherwise all future rendered strings will use it!
+	tft.setTextPadding(0);
+	
+	tft.setTextSize(5);
+	tft.drawString("C", xtempnum + 75, ytempnum);
+	tft.drawString("%", xhumidnum + 75, yhumidnum);
+	
+	tft.drawLine(40, 120, 200, 120, TFT_WHITE);
+
+//
+	
+	if (co2 >= 1200) {
+          tft.setTextColor(TFT_RED, TFT_BLACK);
+		  fg_color = TFT_RED;
+        }
+        else if (co2 >= 700){
+          tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+		  fg_color = TFT_ORANGE;
+        }
+		else {
+          tft.setTextColor(TFT_GREEN, TFT_BLACK);
+		  fg_color = TFT_GREEN;
+    }
+	
+	uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
+	
+	uint16_t x = 120;  // Position of centre of arc
+	uint16_t y = 120;
+	
+	uint8_t radius       = 120; // Outer arc radius
+	uint8_t thickness    = 20;     // Thickness
+	uint8_t inner_radius = radius - thickness;        // Calculate inner radius (can be 0 for circle segment)
+	
+	// 0 degrees is at 6 o'clock position
+	// Arcs are drawn clockwise from start_angle to end_angle
+	uint16_t start_angle = 0; // Start angle must be in range 0 to 360
+	uint16_t end_angle   = co2*360/maxco2; // End angle must be in range 0 to 360
+	
+	//bool arc_end = 2;   // true = round ends, false = square ends (arc_end parameter can be omitted, ends will then be square)
+	
+	tft.drawSmoothArc(x, y, radius, inner_radius, start_angle, end_angle, fg_color, bg_color);
+	
+}
+
+void displayReading() 
+{
+
+    tft.fillScreen(TFT_BLACK);
+
+	uint16_t xco2text = 120;  // Position of text
+	uint16_t yco2text = 120;	
+	
+	// Set datum to Middle Right
+	tft.setTextDatum(MC_DATUM);
+		
+	tft.setTextSize(4);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("Wait...", xco2text, yco2text);
+	
+}
+
+void displayUpdating() 
+{
+	tft.fillScreen(TFT_BLACK);
+	
+	uint16_t fg_color = TFT_WHITE; 
+	uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
+	
+	uint16_t x = 120;  // Position of centre of arc
+	uint16_t y = 120;
+	
+	uint8_t radius       = 120; // Outer arc radius
+	uint8_t thickness    = 10;     // Thickness
+	uint8_t inner_radius = radius - thickness;        // Calculate inner radius (can be 0 for circle segment)
+	
+	// 0 degrees is at 6 o'clock position
+	// Arcs are drawn clockwise from start_angle to end_angle
+	uint16_t start_angle = 0; // Start angle must be in range 0 to 360
+	uint16_t end_angle   = 360; // End angle must be in range 0 to 360
+	
+	//bool arc_end = 2;   // true = round ends, false = square ends (arc_end parameter can be omitted, ends will then be square)
+	
+	tft.drawSmoothArc(x, y, radius, inner_radius, start_angle, end_angle, fg_color, bg_color);
+	
+//
+
+	uint16_t xco2text = 120;  // Position of text
+	uint16_t yco2text = 120;	
+	
+	// Set datum to Middle Right
+	tft.setTextDatum(MC_DATUM);
+		
+	tft.setTextSize(4);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("-UPLOAD-", xco2text, yco2text);
+	
+}
+
+void displayUpdatingOK() 
+{
+	
+	uint16_t fg_color = TFT_GREEN; 
+	uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
+	
+	uint16_t x = 120;  // Position of centre of arc
+	uint16_t y = 120;
+	
+	uint8_t radius       = 120; // Outer arc radius
+	uint8_t thickness    = 10;     // Thickness
+	uint8_t inner_radius = radius - thickness;        // Calculate inner radius (can be 0 for circle segment)
+	
+	// 0 degrees is at 6 o'clock position
+	// Arcs are drawn clockwise from start_angle to end_angle
+	uint16_t start_angle = 0; // Start angle must be in range 0 to 360
+	uint16_t end_angle   = 360; // End angle must be in range 0 to 360
+	
+	//bool arc_end = 2;   // true = round ends, false = square ends (arc_end parameter can be omitted, ends will then be square)
+	
+	tft.drawSmoothArc(x, y, radius, inner_radius, start_angle, end_angle, fg_color, bg_color);
+	
+}
+
+void displayUpdatingNG() 
+{
+	uint16_t fg_color = TFT_RED; 
+	uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
+	
+	uint16_t x = 120;  // Position of centre of arc
+	uint16_t y = 120;
+	
+	uint8_t radius       = 120; // Outer arc radius
+	uint8_t thickness    = 10;     // Thickness
+	uint8_t inner_radius = radius - thickness;        // Calculate inner radius (can be 0 for circle segment)
+	
+	// 0 degrees is at 6 o'clock position
+	// Arcs are drawn clockwise from start_angle to end_angle
+	uint16_t start_angle = 0; // Start angle must be in range 0 to 360
+	uint16_t end_angle   = 360; // End angle must be in range 0 to 360
+	
+	//bool arc_end = 2;   // true = round ends, false = square ends (arc_end parameter can be omitted, ends will then be square)
+	
+	tft.drawSmoothArc(x, y, radius, inner_radius, start_angle, end_angle, fg_color, bg_color);
+}
+
+void displayHello() 
+{
+	tft.fillScreen(TFT_BLACK);
+
+	uint16_t xco2text = 120;  // Position of text
+	uint16_t yco2text = 120;	
+	
+	// Set datum to Middle Right
+	tft.setTextDatum(MC_DATUM);
+		
+	tft.setTextSize(5);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("Hello!", xco2text, yco2text);
+	
+}
+
+void displayWiFi() 
+{
+	tft.fillScreen(TFT_BLACK);
+	
+	uint16_t xco2text = 120;  // Position of text
+	uint16_t yco2text = 120;	
+	
+	// Set datum to Middle Right
+	tft.setTextDatum(MC_DATUM);
+		
+	tft.setTextSize(5);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("WiFi", xco2text, yco2text);
+	
+}
+
+void displayWiFiOK() 
+{
+	uint16_t fg_color = TFT_GREEN; 
+	uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
+	
+	uint16_t x = 120;  // Position of centre of arc
+	uint16_t y = 120;
+	
+	uint8_t radius       = 120; // Outer arc radius
+	uint8_t thickness    = 20;     // Thickness
+	uint8_t inner_radius = radius - thickness;        // Calculate inner radius (can be 0 for circle segment)
+	
+	// 0 degrees is at 6 o'clock position
+	// Arcs are drawn clockwise from start_angle to end_angle
+	uint16_t start_angle = 0; // Start angle must be in range 0 to 360
+	uint16_t end_angle   = 360; // End angle must be in range 0 to 360
+	
+	//bool arc_end = 2;   // true = round ends, false = square ends (arc_end parameter can be omitted, ends will then be square)
+	
+	tft.drawSmoothArc(x, y, radius, inner_radius, start_angle, end_angle, fg_color, bg_color);
+}
+
+void displayWiFiNG() 
+{
+	uint16_t fg_color = TFT_RED; 
+	uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
+	
+	uint16_t x = 120;  // Position of centre of arc
+	uint16_t y = 120;
+	
+	uint8_t radius       = 120; // Outer arc radius
+	uint8_t thickness    = 20;     // Thickness
+	uint8_t inner_radius = radius - thickness;        // Calculate inner radius (can be 0 for circle segment)
+	
+	// 0 degrees is at 6 o'clock position
+	// Arcs are drawn clockwise from start_angle to end_angle
+	uint16_t start_angle = 0; // Start angle must be in range 0 to 360
+	uint16_t end_angle   = 360; // End angle must be in range 0 to 360
+	
+	//bool arc_end = 2;   // true = round ends, false = square ends (arc_end parameter can be omitted, ends will then be square)
+	
+	tft.drawSmoothArc(x, y, radius, inner_radius, start_angle, end_angle, fg_color, bg_color);
 }

@@ -1,31 +1,3 @@
-/***********************************************************************
- ********  Obtain Time and Date and update their variables
- ***********************************************************************/
-void getPrintLocalTime()
-{
-	
-	struct tm timeinfo;
-	if(!getLocalTime(&timeinfo))
-	{
-		Serial.println("Failed to obtain time");
-		return;
-	}
-
-	//---------------------------------------------------------------------
-	//---------------- Store Data in 01/15/23 format ----------------------
-	strftime(dateStringBuff, sizeof(dateStringBuff), "%x", &timeinfo);
-	Serial.print("Today's date: ");
-	Serial.println(dateStringBuff);
-	
-	//---------------------------------------------------------------------
-	//------------------ Store Time in 23:42 format -----------------------
-	strftime(timeStringBuff, sizeof(timeStringBuff), "%H:%M", &timeinfo);
-	Serial.print("Time now: ");
-	Serial.println(timeStringBuff);
-	Serial.println();
-}
-
-
 /************************************************************************************
  ********  Reset WiFi Credentials if side button is pressed
  **********************************************************************************/
@@ -69,8 +41,11 @@ void initializeWiFiManager()
 
     if(!res) {
         Serial.println("Failed to connect");
-        ESP.restart();
-    } 
+        displayWiFiNG();
+		delay(6000);
+		ESP.restart();
+	}
+	
     else {
         //if you get here you have connected to the WiFi    
         Serial.println("Successfully Connected!");
@@ -79,6 +54,8 @@ void initializeWiFiManager()
 		ssidName.replace("_", "");
 		ssidName.replace("-", "");
 		Serial.println("SSID name:" + ssidName);
+		displayWiFiOK();
+		delay(6000);
     }
 
 }

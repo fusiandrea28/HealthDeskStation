@@ -8,22 +8,17 @@
 	
 	1.
 	Install libraries as below:
-	- https://github.com/FastLED/FastLED
 	- https://github.com/Sensirion/arduino-i2c-scd4x
 	- https://github.com/tzapu/WiFiManager
 	- https://github.com/Bodmer/TFT_eSPI
-	- https://github.com/Bodmer/TJpg_Decoder
 	
 	2.
-	Google Script
-	- Create a GSheet spreadsheet
-	- Copy App script in the Google Spreadsheet (documentation available online)
-	- Save and Deploy the script on GSheet as WebApp - Execute as your email - Execute by Anyone
-	- Copy the GOOGLE_SCRIPT_ID and paste it below in the code.
+	ThingSpeak setup
+	- Create a channel with 3 fields (temperature, humidity, co2)
+	- Copy channel ID and API key and paste in USER SETUP below
 	
 	3.
 	Change the LED, I2C and SPI pins
-	- In the ledRingRGB.ino change the #define DATA_PIN to the GPIO you have connected the LEDs to
 	- In the code below, change the SDA and SCL pins in Wire.begin(SDA, SCL) function
 	- In the tftRoundSPI.ino follow the instruction at the top of the code
 
@@ -36,14 +31,21 @@
 //---------------------------------------------------------------------
 //----------------- Timers Definition ---------------------------------
 #include "millisDelay.h"
-millisDelay GsheetDelay;
-int GsheetDelaylenght = 30 *60000; // [minutes] Set the interval to gather data and push to GSheet
-int GsheetDelayfirstrunlenght = 10 *1000; // [seconds] Set the interval for the first run of timer above
+millisDelay thingSpeakDelay;
+int thingSpeakDelaylenght = 10 *60000; // [minutes] Set the interval to gather data and push to GSheet
+int thingSpeakDelayfirstrunlenght = 10 *1000; // [seconds] Set the interval for the first run of timer above
+millisDelay readingsSCD41Delay;
+int readingsSCD41Delaylenght = 1 *60000; // [minutes] Set the interval to gather data and push to GSheet
+int thingSpeakCounter = 0;
+
+millisDelay displayDelay;
+int displayDelaylenght = 20 * 1000; // [seconds] Set the interval for the display update
+int displayCounter = 0;
 
 //---------------------------------------------------------------------
-//-------------- Google Deployment ID Section -------------------------
-//ENTER_GOOGLE_DEPLOYMENT_ID
-String GOOGLE_SCRIPT_ID = "yourGOOGLESCRIPTIDhere";
+//-------------- ThingSpeak Deployment Section ------------------------
+unsigned long myChannelNumber = YOUR_CHANNEL_ID_HERE;
+const char * myWriteAPIKey = "INSERT_YOUR_THINGSPEAK_CHANNEL_API_KEY";
 //---------------------------------------------------------------------
 //+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
@@ -57,15 +59,8 @@ String ssidName;
 String hostname = "ESP32 HealthDesk";
 #define WiFiReset_pin 27 // Define GPIO for the button that will reset WiFi credentials
 
-//---------------------------------------------------------------------
-//--------------- Get Time Define Section -----------------------------
-#include "time.h"
-const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 28800; // GMT +8 = 28800
-const int   daylightOffset_sec = 0;
-// Variables to save date and time
-char timeStringBuff[10]; // chars should be enough
-char dateStringBuff[10]; // chars should be enough
+#include "ThingSpeak.h" // always include thingspeak header file after other header files and custom macros
+WiFiClient  client;
 
 //---------------------------------------------------------------------
 //------------- Define Sensirion SCD41 Co2 sensor----------------------
@@ -78,60 +73,6 @@ SensirionI2CScd4x scd4x;
 	uint16_t error;
     char errorMessage[256];
 
-/***********************************************************************
- ********  Push Payload to Google Sheet
- ***********************************************************************/
-void pushGsheetPayload(String params)
-{
-    HTTPClient http;
-    String url="https://script.google.com/macros/s/"+GOOGLE_SCRIPT_ID+"/exec?"+params;
-   
-    Serial.println("Posting data to Google Sheet...");
-	//---------------------------------------------------------------------
-	//----------------- Begin upload to GSheet ----------------------------
-    http.begin(url.c_str());
-    http.setFollowRedirects(HTTPC_STRICT_FOLLOW_REDIRECTS);
-    int httpCode = http.GET();  
-	//Serial.print("HTTP Status Code: ");
-    //Serial.println(httpCode);
-
-	//---------------------------------------------------------------------
-	//---------------- Get response from GSheet ---------------------------
-    String payload;
-    if (httpCode < 210) {
-        payload = http.getString();
-        Serial.println("Successfully pushed to GSheet");     
-    }
-	else {
-        Serial.println("Error uploading to GSheet");     
-    }
-    
-	//---------------------------------------------------------------------
-	//---------------- Terminate HTTP communication -----------------------
-    http.end();
-}
-
-/************************************************************************************
- ********  Generate Payload to be pushed to Google Sheet
- **********************************************************************************/
-void generateGsheetPayload()
-{
-    String param;
-    param = "temp="+String(temperature);
-    param += "&humid="+String(humidity);
-    param += "&co2="+String(co2);
-	param += "&time="+String(timeStringBuff);
-	param += "&date="+String(dateStringBuff);
-	param += "&ssid="+ssidName;
-
-    Serial.println(param);
-	
-	//---------------------------------------------------------------------
-	//---------------- Push generated data to GSheet ----------------------
-	pushGsheetPayload(param);
-
-}
-
 /************************************************************************************
  ********  SETUP  ***********
  **********************************************************************************/
@@ -141,39 +82,34 @@ void setup()
 	Serial.begin(115200);
 	delay(100);
 	
-	ledRingSetup();
-
-	Serial.println("LED blink");
-	ledLoop();
-	
-	randomSmoothCircles();
+	//---------------------------------------------------------------------
+	//------------- Initialize DIsplay and call "Hello" -------------------
+	displaySetup();
+	displayHello();
+	delay(3000);
 	
 	//---------------------------------------------------------------------
 	//------------------------ Wi-Fi Manager ------------------------------
+	displayWiFi();
 	initializeWiFiManager();
 	
 	pinMode(WiFiReset_pin, INPUT_PULLUP); // Set the wifi reset pin as input with pullup
-  
-	//---------------------------------------------------------------------
-	//------------- Initialize a NTPClient to get time --------------------
-	configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 	
+	ThingSpeak.begin(client);  // Initialize ThingSpeak
+	
+	displayUpdating(); // Display updating screen
+	 
 	//---------------------------------------------------------------------
 	//----------------------- Initialize I2C ------------------------------
-	Wire.begin(4, 5);
+	Wire.begin(21, 22);
 	
 	//---------------------------------------------------------------------
 	//----------------------- Initialize SCD41 ----------------------------
 	initializeSCD41();
 	
-	// Start timer interval to gather data and push to GSheet on first run
-	GsheetDelay.start(GsheetDelayfirstrunlenght);
-	Serial.print("Running first measurement in ");
-	Serial.print(GsheetDelayfirstrunlenght / 1000);
-	Serial.println(" seconds.");
-	
-	Serial.println("LED blink");
-	ledLoop();
+	//---------------------------------------------------------------------
+	//----------------------- Initialize Timers ----------------------------
+	setupTimers();
 	
 	Serial.println("----- SETUP FINISHED -----");
 	Serial.println();	
@@ -185,7 +121,6 @@ void setup()
  **********************************************************************************/
 void loop() 
 {
-	delay(100);
 	//---------------------------------------------------------------------
 	//--- Reset Wifi Credential if button pressed -------------------------
 	if (digitalRead(WiFiReset_pin) == LOW) 
@@ -194,36 +129,73 @@ void loop()
 	}
 	
 	//---------------------------------------------------------------------
-	//--- TIMER ----- Get Readings and push to GSheet ---------------------
-	if (GsheetDelay.justFinished()) 
+	//--- TIMER ----- Get Readings from SCD41 -----------------------------
+	if (readingsSCD41Delay.justFinished()) 
 	{
 		Serial.println("----------------------------------------------------");
-		Serial.println("---------- GsheetDelay Timer RUNNING ---------------");
+		Serial.println("-------- SCD41 Get Readings Timer RUNNING -------------");
+	
+		// Restart the delay
+		readingsSCD41Delay.start(readingsSCD41Delaylenght);
+		Serial.print("Running again in ");
+		Serial.print(readingsSCD41Delaylenght / 60000);
+		Serial.println(" minutes.");	
+		
+		// Execute reading function
+		getSCD41readings();
+	}
+	
+	//---------------------------------------------------------------------
+	//--- TIMER ----- Push to ThingSpeak -----------------
+	if (thingSpeakDelay.justFinished()) 
+	{
+		Serial.println("----------------------------------------------------");
+		Serial.println("-------- ThingSpeakDelay Timer RUNNING -------------");
 		
 		// Restart the delay
-		GsheetDelay.start(GsheetDelaylenght);
+		thingSpeakDelay.start(thingSpeakDelaylenght);
 		Serial.print("Running again in ");
-		Serial.print(GsheetDelaylenght / 60000);
+		Serial.print(thingSpeakDelaylenght / 60000);
 		Serial.println(" minutes.");			
-
-		//---------------------------------------------------------------------
-		//--------------------- Get Date and Time -----------------------------
-		getPrintLocalTime();
 		
-		//---------------------------------------------------------------------
-		//--------------------- Get SCD41 readings ----------------------------
-		getSCD41readings();
-		 
-		//---------------------------------------------------------------------
-		//------------ Generate payload and push to GSheet --------------------
-		generateGsheetPayload();
+		// Execute upload function
+		thingSpeakUpload();
 		
-		Serial.println("LED blink");
-		ledLoop();
-		
-		Serial.println("---------- GsheetDelay Timer EXECUTED --------------");
+		Serial.println("--------- ThingSpeakDelay Timer EXECUTED -----------");
 		Serial.println("----------------------------------------------------");
 		Serial.println();
+	}
+	
+	//---------------------------------------------------------------------
+	//--- TIMER ----- Read SCD41 and loop display screens -----------------
+	if (displayDelay.justFinished()) 
+	{
+		Serial.println("----------------------------------------------------");
+		Serial.println("-------- Display Timer RUNNING -------------");
+		
+		// Restart the delay
+		displayDelay.start(displayDelaylenght);
+		Serial.print("Running again in ");
+		Serial.print(displayDelaylenght / 1000);
+		Serial.println(" seconds.");			
+		
+		// Execute reading function
+		getSCD41readings();
+		
+		displayTempHumid();
+		delay(10000);
+		displayCO2();
+		
+		Serial.println("--------- Display Timer EXECUTED -----------");
+		Serial.println("----------------------------------------------------");
+		Serial.println();
+	}
+	
+	if (co2 <= 1 && displayCounter == 0) 
+	{
+		displayReading();
+		displayCounter++;
+		
 	}
 	
 }
