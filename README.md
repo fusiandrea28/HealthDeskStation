@@ -2,19 +2,20 @@
 
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=fusiandrea28.HealthDeskStation&left_color=green&right_color=red)
 
+<img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/20230222_145305.jpg" alt="ProtoImage1" width="250"/> <img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/20230222_145317.jpg" alt="ProtoImage1" width="250"/>
 
 ## Revision History
 
-## Rev1.2 (TBD)
+#### Rev1.2 (TBD)
 - Add TVOC sensor (SEN55 from Sensirion)
 - Create an eco-friendly enclosure for the device
 
-## Rev1.1
+#### Rev1.1
 - Added support for TFT SPI display (rounded)
 - Replaced GSheet logging to ThingSpeak
 - General improvements
 
-## Rev1.0
+#### Rev1.0
 - Temp, Humidity and CO2 from SCD41 sensor
 - Publishing to GSheet
 - GSheet pulls data from historical weather database
