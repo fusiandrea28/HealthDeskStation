@@ -1,10 +1,6 @@
 /************************************************************************************
-	*** HealthDesk v1.0 ***
-	
-	Firebeetle ESP32-E
-	
-	Tempeature, Humidity and CO2 values read from Sensirion SCD41 sensor
-	Above data is published to GSheet via HTTP (Google AppScript).
+	*** HealthDesk v1.1 ***
+	https://github.com/fusiandrea28/HealthDeskStation
 	
 	1.
 	Install libraries as below:

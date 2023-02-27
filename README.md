@@ -7,12 +7,12 @@
 ## Revision History
 
 #### Rev1.2 (TBD)
-- Add TVOC sensor (SEN55 from Sensirion)
-- Create an eco-friendly enclosure for the device
+- Add TVOC sensor (SEN55 from Sensirion
 
 #### Rev1.1
 - Added support for TFT SPI display (rounded)
 - Replaced GSheet logging to ThingSpeak
+- Eco-friendly enclosure for the device
 - General improvements
 
 #### Rev1.0
