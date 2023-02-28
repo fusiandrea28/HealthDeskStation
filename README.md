@@ -2,7 +2,8 @@
 
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=fusiandrea28.HealthDeskStation&left_color=green&right_color=red)
 
-<img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/20230222_145305.jpg" alt="ProtoImage1" width="250"/> <img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/20230222_145317.jpg" alt="ProtoImage1" width="250"/>
+<img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/20230222_145305.jpg" alt="ProtoImage1" width="250"/> <img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/20230222_145317.jpg" alt="ProtoImage2" width="250"/>
+<img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/ThingSpeakChannel.jpg" alt="ThingSpeak Channel" width="500"/>
 
 ## Revision History
 
