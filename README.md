@@ -36,7 +36,9 @@ The device connects to a WiFi network with the credentials stored in its memory.
 If the saved network is out of range, or no credentials are present in the memory, the WiFi setup will begin.
 
 The ESP32 enters a WiFi setup mode by turning on an access point.
-A smartphone or PC can be used to connect to the ESP32 WiFi network. An intuitive webpage lets you pick an SSID and insert a password to connect to.
+A smartphone or PC can be used to connect to the ESP32 WiFi network. 
+- Navigate to 192.168.4.1
+An intuitive webpage lets you pick an SSID and insert a password to connect to.
 The device restarts if the connection is successful.
 
 Once the device is connected to the internet, it gathers data every 60 seconds from a Sensirion SCD41 sensor connected via I2C interface.
