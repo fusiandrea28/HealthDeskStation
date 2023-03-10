@@ -2,8 +2,11 @@
 
 ![visitors](https://visitor-badge.glitch.me/badge?page_id=fusiandrea28.HealthDeskStation&left_color=green&right_color=red)
 
-<img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/20230222_145305.jpg" alt="ProtoImage1" width="250"/> <img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/20230222_145317.jpg" alt="ProtoImage2" width="250"/>
-<img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/ThingSpeakChannel.jpg" alt="ThingSpeak Channel" width="500"/>
+## Device Display examples
+<img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/green1.jpg" alt="LowCo2" width="200"/> <img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/green2.jpg" alt="LowCo2" width="200"/> <img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/yellow1.jpg" alt="MidCo2" width="200"/> <img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/yellow2.jpg" alt="MidCo2" width="200"/> <img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/red1.jpg" alt="HighCo2" width="200"/> <img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/red2.jpg" alt="HighCo2" width="200"/>
+
+#### ThingSpeak Interface
+<img src="https://github.com/fusiandrea28/HealthDeskStation/blob/main/ThingSpeakChannel.jpg" alt="ThingSpeak Channel" width="800"/>
 
 ## Revision History
 
