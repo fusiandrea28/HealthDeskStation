@@ -28,10 +28,10 @@
 //----------------- Timers Definition ---------------------------------
 #include "millisDelay.h"
 millisDelay thingSpeakDelay;
-int thingSpeakDelaylenght = 10 *60000; // [minutes] Set the interval to gather data and push to GSheet
+int thingSpeakDelaylenght = 10 *60000; // [minutes] Set the interval to gather data and push to ThingSpeak
 int thingSpeakDelayfirstrunlenght = 10 *1000; // [seconds] Set the interval for the first run of timer above
 millisDelay readingsSCD41Delay;
-int readingsSCD41Delaylenght = 1 *60000; // [minutes] Set the interval to gather data and push to GSheet
+int readingsSCD41Delaylenght = 1 *60000; // [minutes] Set the interval to gather data and push to ThingSpeak
 int thingSpeakCounter = 0;
 
 millisDelay displayDelay;
