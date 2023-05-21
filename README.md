@@ -61,7 +61,7 @@ See the instruction in main.ino for hardware setup. Also pasted here below.
 	
 	2.
 	ThingSpeak setup
-	- Create a channel with 3 fields (temperature, humidity, co2)
+	- Create a channel with 3 fields (temperature, humidity, co2) - https://www.mathworks.com/help/thingspeak/collect-data-in-a-new-channel.html
 	- Copy channel ID and API key and paste in USER SETUP below
 	
 	3.
