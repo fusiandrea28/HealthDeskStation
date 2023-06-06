@@ -7,6 +7,7 @@
 	- https://github.com/Sensirion/arduino-i2c-scd4x
 	- https://github.com/tzapu/WiFiManager
 	- https://github.com/Bodmer/TFT_eSPI
+	- https://github.com/PowerBroker2/SafeString
 	
 	2.
 	ThingSpeak setup
