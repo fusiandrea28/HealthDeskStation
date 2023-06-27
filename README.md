@@ -10,8 +10,14 @@
 
 ## Revision History
 
-#### Rev1.2 (TBD)
+#### Rev2.0 (TBD)
 - Add TVOC sensor (SEN55 from Sensirion
+
+#### Rev1.2
+- Added missing library link for ThingSpeak in the heading section of main.ino
+- Changed Access Point SSID and password
+- Added displayAccessPoint and displayWiFIAP to aid connection to ESP32 Access Point
+- Dark theme and signal strength percentage for the Access Point page
 
 #### Rev1.1
 - Added support for TFT SPI display (rounded)
@@ -58,6 +64,7 @@ See the instruction in main.ino for hardware setup. Also pasted here below.
 	- https://github.com/Sensirion/arduino-i2c-scd4x
 	- https://github.com/tzapu/WiFiManager
 	- https://github.com/Bodmer/TFT_eSPI
+ 	- https://github.com/mathworks/thingspeak-arduino
 	
 	2.
 	ThingSpeak setup
