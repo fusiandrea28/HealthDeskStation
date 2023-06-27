@@ -14,7 +14,9 @@ void resetWiFicredentials()
  **********************************************************************************/
 void initializeWiFiManager()
 {
-
+	
+	displayAccessPoint();
+	
     WiFi.mode(WIFI_STA); // explicitly set mode, esp defaults to STA+AP
     // it is a good practice to make sure your code sets wifi mode how you want it.
     
@@ -34,10 +36,13 @@ void initializeWiFiManager()
     // if empty will auto generate SSID, if password is blank it will be anonymous AP (wm.autoConnect())
     // then goes into a blocking loop awaiting configuration and will return success result
 
+	wm.setClass("invert"); // dark theme
+	wm.setScanDispPerc(true); // display percentages instead of graphs for RSSI
+
     bool res;
     // res = wm.autoConnect(); // auto generated AP name from chipid
     // res = wm.autoConnect("ESP32SetupWiFi"); // anonymous ap
-    res = wm.autoConnect("ESP32SetupWiFi","esp32wifisetuppsw"); // password protected ap
+    res = wm.autoConnect("ESP32","444ap444"); // password protected ap
 
     if(!res) {
         Serial.println("Failed to connect");

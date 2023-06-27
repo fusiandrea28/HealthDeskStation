@@ -307,24 +307,92 @@ void displayHello()
 	
 }
 
-void displayWiFi() 
+void displayWiFIAP() 
 {
 	tft.fillScreen(TFT_BLACK);
 	
-	uint16_t xco2text = 120;  // Position of text
-	uint16_t yco2text = 120;	
-	
 	// Set datum to Middle Right
 	tft.setTextDatum(MC_DATUM);
-		
-	tft.setTextSize(5);
+	
+	uint16_t xAP1 = 120;  // Position of text
+	uint16_t yAP1 = 120;	
+	
+	tft.setTextSize(2);
 	tft.setTextColor(TFT_WHITE, TFT_BLACK);
-	tft.drawString("WiFi", xco2text, yco2text);
+	tft.drawString("Connect to WiFi", xAP1, yAP1);
+	
+}
+
+void displayAccessPoint() 
+{
+	tft.fillScreen(TFT_BLACK);
+	
+	uint16_t xAP2 = 120;  // Position of text
+	uint16_t yAP2 = 35;	
+	
+		// Set datum to Middle Right
+	tft.setTextDatum(MC_DATUM);
+	
+	tft.setTextSize(2);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("SSID, PSW:", xAP2, yAP2);
+	
+	uint16_t xAP3 = 120;  // Position of text
+	uint16_t yAP3 = 70;
+	
+		// Set datum to Middle Right
+	tft.setTextDatum(MC_DATUM);
+	
+	tft.setTextSize(2);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("ESP32, 444ap444", xAP3, yAP3);
+	
+	uint16_t xAP4= 120;  // Position of text
+	uint16_t yAP4 = 120;
+	
+		// Set datum to Middle Right
+	tft.setTextDatum(MC_DATUM);
+	
+	tft.setTextSize(2);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("Visit:", xAP4, yAP4);
+	
+	uint16_t xAP5 = 120;  // Position of text
+	uint16_t yAP5 = 170;
+	
+		// Set datum to Middle Right
+	tft.setTextDatum(MC_DATUM);
+	
+	tft.setTextSize(3);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("192.168.4.1", xAP5, yAP5);
 	
 }
 
 void displayWiFiOK() 
 {
+	tft.fillScreen(TFT_BLACK);
+	
+	// Set datum to Middle Right
+	tft.setTextDatum(MC_DATUM);
+	
+	uint16_t xAP6 = 120;  // Position of text
+	uint16_t yAP6 = 80;
+	
+	tft.setTextSize(2);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("Connected to:", xAP6, yAP6);
+	
+	uint16_t xAP7 = 120;  // Position of text
+	uint16_t yAP7 = 125;
+	
+		// Set datum to Middle Right
+	tft.setTextDatum(MC_DATUM);
+	
+	tft.setTextSize(2);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString(ssidName, xAP7, yAP7);
+	
 	uint16_t fg_color = TFT_GREEN; 
 	uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
 	
@@ -347,6 +415,11 @@ void displayWiFiOK()
 
 void displayWiFiNG() 
 {
+	tft.fillScreen(TFT_BLACK);
+	
+	// Set datum to Middle Right
+	tft.setTextDatum(MC_DATUM);
+	
 	uint16_t fg_color = TFT_RED; 
 	uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
 	

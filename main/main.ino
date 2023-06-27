@@ -7,7 +7,7 @@
 	- https://github.com/Sensirion/arduino-i2c-scd4x
 	- https://github.com/tzapu/WiFiManager
 	- https://github.com/Bodmer/TFT_eSPI
-	- https://github.com/PowerBroker2/SafeString
+	- https://github.com/mathworks/thingspeak-arduino
 	
 	2.
 	ThingSpeak setup
@@ -29,10 +29,10 @@
 //----------------- Timers Definition ---------------------------------
 #include "millisDelay.h"
 millisDelay thingSpeakDelay;
-int thingSpeakDelaylenght = 10 *60000; // [minutes] Set the interval to gather data and push to ThingSpeak
+int thingSpeakDelaylenght = 10 *60000; // [minutes] Set the interval to gather data and push to GSheet
 int thingSpeakDelayfirstrunlenght = 10 *1000; // [seconds] Set the interval for the first run of timer above
 millisDelay readingsSCD41Delay;
-int readingsSCD41Delaylenght = 1 *60000; // [minutes] Set the interval to gather data and push to ThingSpeak
+int readingsSCD41Delaylenght = 1 *60000; // [minutes] Set the interval to gather data and push to GSheet
 int thingSpeakCounter = 0;
 
 millisDelay displayDelay;
@@ -80,14 +80,13 @@ void setup()
 	delay(100);
 	
 	//---------------------------------------------------------------------
-	//------------- Initialize DIsplay and call "Hello" -------------------
+	//--------------------- Initialize DIsplay ----------------------------
 	displaySetup();
-	displayHello();
-	delay(3000);
 	
 	//---------------------------------------------------------------------
 	//------------------------ Wi-Fi Manager ------------------------------
-	displayWiFi();
+	displayWiFIAP();
+	delay(2000);		
 	initializeWiFiManager();
 	
 	pinMode(WiFiReset_pin, INPUT_PULLUP); // Set the wifi reset pin as input with pullup
