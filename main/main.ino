@@ -5,6 +5,7 @@
 	1.
 	Install libraries as below:
 	- https://github.com/Sensirion/arduino-i2c-scd4x
+	- https://github.com/Sensirion/arduino-i2c-sen5x
 	- https://github.com/tzapu/WiFiManager
 	- https://github.com/Bodmer/TFT_eSPI
 	- https://github.com/mathworks/thingspeak-arduino
@@ -22,17 +23,17 @@
  **********************************************************************************/
 
 // Uncomment line below if not using Arduino IDE
-//#include "Arduino.h"
+#include "Arduino.h"
 
 //++++++++++++++++++++++++ USER SETUP +++++++++++++++++++++++++++++++++
 //---------------------------------------------------------------------
 //----------------- Timers Definition ---------------------------------
 #include "millisDelay.h"
 millisDelay thingSpeakDelay;
-int thingSpeakDelaylenght = 10 *60000; // [minutes] Set the interval to gather data and push to GSheet
+int thingSpeakDelaylenght = 10 *60000; // [minutes] Set the interval to gather data and push to ThingSpeak
 int thingSpeakDelayfirstrunlenght = 10 *1000; // [seconds] Set the interval for the first run of timer above
 millisDelay readingsSCD41Delay;
-int readingsSCD41Delaylenght = 1 *60000; // [minutes] Set the interval to gather data and push to GSheet
+int readingsSCD41Delaylenght = 1 *60000; // [minutes] Set the interval to gather data from SCD41 and SEN55
 int thingSpeakCounter = 0;
 
 millisDelay displayDelay;
@@ -69,6 +70,19 @@ SensirionI2CScd4x scd4x;
     float humidity = 0.0f;
 	uint16_t error;
     char errorMessage[256];
+	
+//---------------------------------------------------------------------
+//------------- Define Sensirion SCD55 --------------------------------	
+
+    // Read Measurement
+    float massConcentrationPm1p0;
+    float massConcentrationPm2p5;
+    float massConcentrationPm4p0;
+    float massConcentrationPm10p0;
+    float ambientHumidity;
+    float ambientTemperature;
+    float vocIndex;
+    float noxIndex;
 
 /************************************************************************************
  ********  SETUP  ***********
@@ -104,6 +118,10 @@ void setup()
 	initializeSCD41();
 	
 	//---------------------------------------------------------------------
+	//----------------------- Initialize SCD41 ----------------------------
+	initializeSCD55();
+	
+	//---------------------------------------------------------------------
 	//----------------------- Initialize Timers ----------------------------
 	setupTimers();
 	
@@ -125,11 +143,11 @@ void loop()
 	}
 	
 	//---------------------------------------------------------------------
-	//--- TIMER ----- Get Readings from SCD41 -----------------------------
+	//--- TIMER ----- Get Readings from SCD41 and SEN55 -------------------
 	if (readingsSCD41Delay.justFinished()) 
 	{
 		Serial.println("----------------------------------------------------");
-		Serial.println("-------- SCD41 Get Readings Timer RUNNING -------------");
+		Serial.println("-------- SCD41 and SEN55 Get Readings Timer RUNNING -------------");
 	
 		// Restart the delay
 		readingsSCD41Delay.start(readingsSCD41Delaylenght);
@@ -139,6 +157,7 @@ void loop()
 		
 		// Execute reading function
 		getSCD41readings();
+		getSEN55readings();
 	}
 	
 	//---------------------------------------------------------------------
@@ -177,10 +196,15 @@ void loop()
 		
 		// Execute reading function
 		getSCD41readings();
+		getSEN55readings();
 		
 		displayTempHumid();
 		delay(10000);
 		displayCO2();
+		delay(7000);
+		displayPM25();
+		delay(7000);
+		displayVOC();
 		
 		Serial.println("--------- Display Timer EXECUTED -----------");
 		Serial.println("----------------------------------------------------");

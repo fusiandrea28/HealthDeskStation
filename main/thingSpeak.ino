@@ -11,11 +11,17 @@ void thingSpeakUpload()
 	//---------------------------------------------------------------------
 	//--------------------- Get SCD41 readings ----------------------------
 	getSCD41readings();
+	getSEN55readings();
 	
 	// set the fields with the values
 	ThingSpeak.setField(1, temperature);
 	ThingSpeak.setField(2, humidity);
 	ThingSpeak.setField(3, co2);
+	ThingSpeak.setField(4, massConcentrationPm1p0);
+	ThingSpeak.setField(5, massConcentrationPm2p5);
+	ThingSpeak.setField(6, massConcentrationPm10p0);
+	ThingSpeak.setField(7, vocIndex);
+	ThingSpeak.setField(8, noxIndex);
 	
 	String myStatus = "";
 	// figure out the status message

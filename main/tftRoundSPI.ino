@@ -42,6 +42,8 @@ uint16_t  bg_color =0;
 uint16_t  fg_color =0;
 
 int maxco2 = 1500; // define max value for CO2 gauge
+int maxpm25 = 30; // define max value for PM2.5 gauge
+int maxVOC = 400; // define max value for PM2.5 gauge
 
 void displaySetup() 
 {
@@ -115,6 +117,138 @@ void displayCO2()
 	tft.setTextSize(5);
 	tft.setTextColor(TFT_WHITE, TFT_BLACK);
 	tft.drawString("CO2", xco2text, yco2text);
+	
+	tft.drawLine(40, 120, 200, 120, TFT_WHITE);
+	
+}
+
+void displayPM25() 
+{
+	tft.fillScreen(TFT_BLACK);
+	
+	if (massConcentrationPm2p5 >= 25) {
+          tft.setTextColor(TFT_RED, TFT_BLACK);
+		  fg_color = TFT_RED;
+        }
+        else if (massConcentrationPm2p5 >= 15){
+          tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+		  fg_color = TFT_ORANGE;
+        }
+		else {
+          tft.setTextColor(TFT_GREEN, TFT_BLACK);
+		  fg_color = TFT_GREEN;
+    }
+	
+	uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
+	
+	uint16_t x = 120;  // Position of centre of arc
+	uint16_t y = 120;
+	
+	uint8_t radius       = 120; // Outer arc radius
+	uint8_t thickness    = 20;     // Thickness
+	uint8_t inner_radius = radius - thickness;        // Calculate inner radius (can be 0 for circle segment)
+	
+	// 0 degrees is at 6 o'clock position
+	// Arcs are drawn clockwise from start_angle to end_angle
+	uint16_t start_angle = 0; // Start angle must be in range 0 to 360
+	uint16_t end_angle   = massConcentrationPm2p5*360/maxpm25; // End angle must be in range 0 to 360
+	
+	//bool arc_end = 2;   // true = round ends, false = square ends (arc_end parameter can be omitted, ends will then be square)
+	
+	tft.drawSmoothArc(x, y, radius, inner_radius, start_angle, end_angle, fg_color, bg_color);
+	
+//
+	
+	uint16_t xpm25num = 120;  // Position of number
+	uint16_t ypm25num = 140;
+
+	uint16_t xpm25text = 120;  // Position of text
+	uint16_t ypm25text = 60;	
+	
+	// Set datum to Middle Right
+	tft.setTextDatum(TC_DATUM);
+		
+	// Set the padding to the maximum width that the digits could occupy in font 4
+	// This ensures small numbers obliterate large ones on the screen
+	//tft.setTextPadding( tft.textWidth("-88.88", 4) );
+	
+	tft.setTextSize(1);
+
+	// Draw a floating point number with 2 decimal places with right datum in font 4
+	tft.drawNumber(massConcentrationPm2p5, xpm25num, ypm25num, 7);
+	
+	// Reset text padding to 0 otherwise all future rendered strings will use it!
+	tft.setTextPadding(0);
+	
+	tft.setTextSize(5);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("PM2.5", xpm25text, ypm25text);
+	
+	tft.drawLine(40, 120, 200, 120, TFT_WHITE);
+	
+}
+
+void displayVOC() 
+{
+	tft.fillScreen(TFT_BLACK);
+	
+	if (vocIndex >= 300) {
+          tft.setTextColor(TFT_RED, TFT_BLACK);
+		  fg_color = TFT_RED;
+        }
+        else if (vocIndex >= 110){
+          tft.setTextColor(TFT_ORANGE, TFT_BLACK);
+		  fg_color = TFT_ORANGE;
+        }
+		else {
+          tft.setTextColor(TFT_GREEN, TFT_BLACK);
+		  fg_color = TFT_GREEN;
+    }
+	
+	uint16_t bg_color = TFT_BLACK;       // This is the background colour used for smoothing (anti-aliasing)
+	
+	uint16_t x = 120;  // Position of centre of arc
+	uint16_t y = 120;
+	
+	uint8_t radius       = 120; // Outer arc radius
+	uint8_t thickness    = 20;     // Thickness
+	uint8_t inner_radius = radius - thickness;        // Calculate inner radius (can be 0 for circle segment)
+	
+	// 0 degrees is at 6 o'clock position
+	// Arcs are drawn clockwise from start_angle to end_angle
+	uint16_t start_angle = 0; // Start angle must be in range 0 to 360
+	uint16_t end_angle   = vocIndex*360/maxVOC; // End angle must be in range 0 to 360
+	
+	//bool arc_end = 2;   // true = round ends, false = square ends (arc_end parameter can be omitted, ends will then be square)
+	
+	tft.drawSmoothArc(x, y, radius, inner_radius, start_angle, end_angle, fg_color, bg_color);
+	
+//
+	
+	uint16_t xvocnum = 120;  // Position of number
+	uint16_t yvocnum = 140;
+
+	uint16_t xvoctext = 120;  // Position of text
+	uint16_t yvoctext = 60;	
+	
+	// Set datum to Middle Right
+	tft.setTextDatum(TC_DATUM);
+		
+	// Set the padding to the maximum width that the digits could occupy in font 4
+	// This ensures small numbers obliterate large ones on the screen
+	//tft.setTextPadding( tft.textWidth("-88.88", 4) );
+	
+	tft.setTextSize(1);
+
+	// Draw a floating point number with 2 decimal places with right datum in font 4
+	tft.drawNumber(vocIndex, xvocnum, yvocnum, 7);
+	
+	// Reset text padding to 0 otherwise all future rendered strings will use it!
+	tft.setTextPadding(0);
+	
+	tft.setTextSize(5);
+	tft.setTextColor(TFT_WHITE, TFT_BLACK);
+	tft.drawString("VOC", xvoctext, yvoctext);
 	
 	tft.drawLine(40, 120, 200, 120, TFT_WHITE);
 	
