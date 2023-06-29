@@ -10,8 +10,10 @@
 
 ## Revision History
 
-#### Rev2.0 (TBD)
-- Add TVOC sensor (SEN55 from Sensirion
+#### Rev2.0
+- Added support for Sensirion SEN55 sensor
+- Added new display screens for PM2.5 and VOC index
+- Updated push data to Thingspeak
 
 #### Rev1.2
 - Added missing library link for ThingSpeak in the heading section of main.ino
